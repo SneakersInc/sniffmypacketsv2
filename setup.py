@@ -14,7 +14,8 @@ setup(
         '' : [ '*.gif', '*.png', '*.conf', '*.mtz', '*.machine' ] # list of resources
     },
     install_requires=[
-        'canari'
+        'canari',
+        'pymongo>=2.7.2'
     ],
     dependency_links=[
         # custom links for the install_requires

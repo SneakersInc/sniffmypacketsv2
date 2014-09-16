@@ -52,3 +52,15 @@ docs/_build/
 
 # PyBuilder
 target/
+
+
+#Exclude conf files generated when canari package installed, not the main conf file though
+*.conf
+!/src/sniffmypacketsv2/resources/etc/*.conf
+
+#Exclude python autosave and complied files
+*.pyc
+*.py~
+
+#Exclude sniffMyPackets.mtz from src directory
+/src/sniffmypacketsv2.mtz

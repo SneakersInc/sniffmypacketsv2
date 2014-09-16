@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = 'catalyst256'
-__copyright__ = 'Copyright 2014, Sniffmypacketsv2 Project'
+__copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
 __credits__ = []
 
 __license__ = 'GPL'
@@ -11,5 +11,6 @@ __email__ = 'catalyst256@gmail.com'
 __status__ = 'Development'
 
 __all__ = [
+    'pcap-sessionid',
     'common'
 ]
