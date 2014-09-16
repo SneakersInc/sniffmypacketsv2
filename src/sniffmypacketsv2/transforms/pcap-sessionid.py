@@ -4,7 +4,8 @@ import uuid
 from collections import OrderedDict
 from common.dbconnect import mongo_connect
 from common.entities import pcapFile, SessionID
-from canari.maltego.utils import debug, progress
+from canari.maltego.message import Field, Label, UIMessage
+# from canari.maltego.utils import debug, progress
 from canari.framework import configure #, superuser
 
 __author__ = 'catalyst256'
@@ -37,10 +38,18 @@ def dotransform(request, response, config):
   x = mongo_connect()
   c = x['SessionID']
   try:
-    v = OrderedDict()
-    header = {"SessionID": sess_id, "pcapfile": pcap, "timestamp": now}
-    v.update(header)  
-    c.insert(v)
+    s = x.SessionID.find({"pcapfile": request.value}).count()
+    if s > 0:
+      r = x.SessionID.find({"pcapfile": request.value}, { "SessionID": 1, "_id":0})
+      for i in r:
+        e = SessionID(i['SessionID'])
+        response += e
+        return response
+    else:
+      v = OrderedDict()
+      header = {"SessionID": sess_id, "pcapfile": pcap, "timestamp": now}
+      v.update(header)
+      c.insert(v)
   except Exception, e:
     print e
   r = SessionID(sess_id)

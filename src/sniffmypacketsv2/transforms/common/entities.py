@@ -19,11 +19,14 @@ __all__ = [
 
 class Sniffmypacketsv2Entity(Entity):
     _namespace_ = 'sniffmypacketsv2'
- 
+
 # @EntityField(name='sniffmypacketsv2.fieldN', propname='fieldN', displayname='Field N', matchingrule=MatchingRule.Loose)
 # @EntityField(name='sniffmypacketsv2.field1', propname='field1', displayname='Field 1', type=EntityFieldType.Integer)
 class pcapFile(Sniffmypacketsv2Entity):
     pass
 
 class SessionID(Sniffmypacketsv2Entity):
+    pass
+
+class Folder(Sniffmypacketsv2Entity):
     pass
