@@ -31,3 +31,6 @@ class SessionID(Sniffmypacketsv2Entity):
 
 class Folder(Sniffmypacketsv2Entity):
     pass
+
+class Host(Sniffmypacketsv2Entity):
+    pass
