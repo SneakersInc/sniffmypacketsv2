@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 from canari.maltego.message import Entity, EntityField, EntityFieldType, MatchingRule
 
 __author__ = 'catalyst256'

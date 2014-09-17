@@ -102,7 +102,7 @@ def dotransform(request, response, config):
         c = x['StreamIndex']
         now = time.strftime("%c")
         m = {}
-        h = {"SessionID": sess, "streamfile": f, "timestamp": now, "filepath": w, "originalpcap": pcap}
+        h = {"SessionID": sess, "streamfile": cut, "timestamp": now, "filepath": w, "originalpcap": request.value}
         m.update(h)
         c.insert(m)
       except:

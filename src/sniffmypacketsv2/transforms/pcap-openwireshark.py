@@ -24,7 +24,7 @@ __all__ = [
     description='Open pcap file with Wireshark',
     uuids=[ 'sniffmypacketsv2.v2.open_pcap_wshark' ],
     inputs=[ ( '[SmP] - PCAP', pcapFile ) ],
-    debug=True
+    debug=False
 )
 def dotransform(request, response, config):
   pcap = request.value

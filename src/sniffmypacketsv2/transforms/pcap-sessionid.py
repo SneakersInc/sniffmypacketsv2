@@ -29,7 +29,7 @@ __all__ = [
     description='Generates Session ID for pcap file',
     uuids=[ 'sniffmypacketsv2.v2.create_session_id_2_db' ],
     inputs=[ ( '[SmP] - PCAP', pcapFile ) ],
-    debug=True
+    debug=False
 )
 def dotransform(request, response, config):
   pcap = request.value
