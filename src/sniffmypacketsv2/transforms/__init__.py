@@ -11,7 +11,9 @@ __email__ = 'catalyst256@gmail.com'
 __status__ = 'Development'
 
 __all__ = [
-    'folder-import',
+    'pcap-openwireshark',
+    'pcap-tcpstreams',
+    'pcap-folderimport',
     'pcap-sessionid',
     'common'
 ]

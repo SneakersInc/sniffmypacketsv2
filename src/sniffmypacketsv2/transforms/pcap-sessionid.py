@@ -43,6 +43,7 @@ def dotransform(request, response, config):
       r = x.SessionID.find({"pcapfile": request.value}, { "SessionID": 1, "_id":0})
       for i in r:
         e = SessionID(i['SessionID'])
+        e += Field('sniffmypacketsv2.pcapfile', pcap, displayname='PCAP File')
         response += e
         return response
     else:
@@ -51,7 +52,8 @@ def dotransform(request, response, config):
       v.update(header)
       c.insert(v)
   except Exception, e:
-    print e
+    return response + UIMessage(e)
   r = SessionID(sess_id)
+  r += Field('sniffmypacketsv2.pcapfile', pcap, displayname='PCAP File')
   response += r
   return response
