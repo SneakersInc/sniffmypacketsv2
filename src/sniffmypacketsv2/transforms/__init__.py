@@ -12,7 +12,7 @@ __status__ = 'Development'
 
 __all__ = [
     'pcap-ipaddr',
-    'session-import',
+    'session-pcapimport',
     'pcap-openwireshark',
     'pcap-tcpstreams',
     'pcap-folderimport',
