@@ -34,3 +34,6 @@ class Folder(Sniffmypacketsv2Entity):
 
 class Host(Sniffmypacketsv2Entity):
     pass
+
+class DomainName(Sniffmypacketsv2Entity):
+    pass

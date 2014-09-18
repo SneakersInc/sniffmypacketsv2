@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import os
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
@@ -7,7 +6,7 @@ from scapy.all import *
 from common.dbconnect import mongo_connect
 from collections import OrderedDict
 from canari.maltego.message import Field, Label, UIMessage
-from common.entities import pcapFile, Host
+from common.entities import pcapFile, DomainName
 from canari.framework import configure #, superuser
 
 __author__ = 'catalyst256'
@@ -26,16 +25,18 @@ __all__ = [
 
 #@superuser
 @configure(
-    label='Extract IP Addresses',
-    description='Extract IP addresses from pcap file',
-    uuids=[ 'sniffmypacketsv2.v2.pcap_2_ipaddr' ],
+    label='Find DNS Traffic',
+    description='Find DNS traffic in a pcap file',
+    uuids=[ 'sniffmypacketsv2.v2.pcap_2_dns' ],
     inputs=[ ( '[SmP] - PCAP', pcapFile ) ],
     debug=True
 )
 def dotransform(request, response, config):
-  # Set the base variables
+  # Set system variables
+  pcap = request.value
   sess = ''
   x = mongo_connect()
+  dns = []
 
   # Look to see if the pcap file has a SessionID value already
   try:
@@ -55,48 +56,24 @@ def dotransform(request, response, config):
   except Exception as e:
     return response + UIMessage(e)
 
-  # Load the pcap file into scapy as variable pkts
-  pcap = request.value
+  # Load the pcap into Scapy
   pkts = rdpcap(pcap)
-
-  # Set the lists to be used
-  tcp_srcip = []
-  udp_srcip = []
-  convo = []
-
-  # Pull out all the TCP and UDP IP addresses
+  # Look for DNS packets (requests & responses)
   for p in pkts:
-    if p.haslayer(TCP):
-      tcp_srcip.append(p.getlayer(IP).src)
-      tcp_srcip.append(p.getlayer(IP).dst)
-    if p.haslayer(UDP):
-      udp_srcip.append(p.getlayer(IP).src)
-      udp_srcip.append(p.getlayer(IP).dst)
+    if p.haslayer(DNSRR):
+      a_count = p[DNS].ancount
+      i = a_count + 4
+      while i > 4:
+        r = 'Response', p[0][i].rrname, p[0][i].rdata, p[0][i].ttl
+        dns.append(r)
+        i -= 1
+    if p.haslayer(DNSQR):
+      r = 'Request', p[DNSQR].qname, p[IP].src, p[DNSQR].qtype
+      dns.append(r)
 
-  for m in tcp_srcip:
-    talker = m, 'tcp'
-    if talker not in convo:
-      convo.append(talker)
-
-  for y in udp_srcip:
-    talker = y, 'udp'
-    if talker not in convo:
-      convo.append(talker)
-
-  # Write to the database
-  for ip, proto in convo:
-    try:
-      c = x['IPAddress']
-      v = OrderedDict()
-      header = {"SessionID": sess, "pcapfile": pcap, "ipaddr": ip, "proto": proto}
-      v.update(header)
-      c.insert(v)
-    except Exception as e:
-      return response + UIMessage(e)
-    # Build the entities
-    e = Host(ip)
-    e.linklabel = proto
-    e += Field('sniffmypacketsv2.pcapfile', pcap, displayname='Original pcap File', matchingrule='loose')
-    e += Field('sniffmypacketsv2.SessionID', sess, displayname='SessionID', matchingrule='loose')
+  # Build entities
+  for d in dns:
+    e = DomainName(d[1])
+    e.linklabel = d[0]
     response += e
   return response

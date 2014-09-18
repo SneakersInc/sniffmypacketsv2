@@ -11,6 +11,7 @@ __email__ = 'catalyst256@gmail.com'
 __status__ = 'Development'
 
 __all__ = [
+    'pcap-dns',
     'pcap-ipaddr',
     'session-pcapimport',
     'pcap-openwireshark',
