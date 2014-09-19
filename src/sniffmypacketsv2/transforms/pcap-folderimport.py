@@ -3,7 +3,7 @@
 import os
 import glob
 from common.entities import Folder, pcapFile
-# from canari.maltego.utils import debug, progress
+from canari.maltego.message import UIMessage
 from canari.framework import configure #, superuser
 
 __author__ = 'catalyst256'
@@ -31,9 +31,16 @@ __all__ = [
 def dotransform(request, response, config):
   e = ['.cap', '.pcap']
   files = []
-  for i in e:
-    files = glob.glob(request.value + '/*' + i)
-  for x in files:
-    e = pcapFile(x)
-    response += e
-  return response
+  try:
+    if not os.path.exists(request.value):
+      return response + UIMessage('Folder doesn\'t exist..')
+    else:
+      for i in e:
+        files = glob.glob(request.value + '/*' + i)
+        for x in files:
+          e = pcapFile(x)
+          response += e
+        return response
+  except Exception as e:
+    return response + UIMessage(e)
+          
