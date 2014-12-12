@@ -15,7 +15,11 @@ setup(
     },
     install_requires=[
         'canari',
-        'pymongo>=2.7.2'
+        'pymongo>=2.7.2',
+        'scapy',
+        'python-magic',
+        'magic',
+        'pygeoip',
     ],
     dependency_links=[
         # custom links for the install_requires
