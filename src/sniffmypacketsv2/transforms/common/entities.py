@@ -15,7 +15,13 @@ __status__ = 'Development'
 
 __all__ = [
     'Sniffmypacketsv2Entity',
-    'MySniffmypacketsv2Entity'
+    'MySniffmypacketsv2Entity',
+    'pcapFile',
+    'SessionID',
+    'Folder',
+    'Host',
+    'GeoMap',
+    'Artifact'
 ]
 
 
@@ -43,4 +49,26 @@ class Host(Sniffmypacketsv2Entity):
 
 
 class GeoMap(Sniffmypacketsv2Entity):
+    pass
+
+
+@EntityField(name='sniffmypacketsv2.fhash', propname='fhash', displayname='File Hash', type=EntityFieldType.String)
+@EntityField(name='sniffmypacketsv2.ftype', propname='ftype', displayname='File Type', type=EntityFieldType.String)
+class Artifact(Sniffmypacketsv2Entity):
+    pass
+
+
+class pcapStream(Sniffmypacketsv2Entity):
+    pass
+
+
+class VirusTotal(Sniffmypacketsv2Entity):
+    pass
+
+
+class ZipFile(Sniffmypacketsv2Entity):
+    pass
+
+
+class EmailAttachment(Sniffmypacketsv2Entity):
     pass

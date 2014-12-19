@@ -3,6 +3,7 @@
 from common.entities import pcapFile, GeoMap
 from common.dbconnect import mongo_connect
 from common.hashmethods import *
+import datetime
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
@@ -31,7 +32,7 @@ __all__ = [
     label='Lookup GeoIP Details',
     description='TODO: Returns a Something entity with the phrase "Hello Word!"',
     uuids=['sniffMyPacketsv2.v2.pcap_2_geoip'],
-    inputs=[('[SMP] - PCAP', pcapFile)],
+    inputs=[('[SMP] - GeoIP', pcapFile)],
     debug=True
 )
 def dotransform(request, response):
@@ -52,12 +53,18 @@ def dotransform(request, response):
     # Get the PCAP ID for the pcap file
     try:
         s = x.INDEX.find({"MD5 Hash": md5hash}).count()
+        if s == 0:
+            t = x.STREAMS.find({"MD5 Hash": md5hash}).count()
+            if t > 0:
+                r = x.STREAMS.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
+                for i in r:
+                    pcap_id = i['PCAP ID']
+            else:
+                return response + UIMessage('No PCAP ID, you need to index the pcap file')
         if s > 0:
             r = x.INDEX.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
             for i in r:
                 pcap_id = i['PCAP ID']
-        else:
-            return response + UIMessage('No PCAP ID, you need to index the pcap file')
     except Exception as e:
         return response + UIMessage(str(e))
 
@@ -92,7 +99,12 @@ def dotransform(request, response):
         d = lookup_geo(dst)
         geo = OrderedDict({'PCAP ID': pcap_id, 'Protocol': proto, 'src': src, 'src port': sport, 'src geo': s,
                            'dst': dst, 'dst port': dport, 'dst geo': d})
-        c.insert(geo)
+
+        t = x.GEOIP.find({'src': src, 'src port': sport, 'dst': dst, 'dst port': dport}).count()
+        if t > 0:
+            pass
+        else:
+            c.insert(geo)
 
     # Build the URL for the returned Maltego entity
     url = config['web/server'].strip('\'')

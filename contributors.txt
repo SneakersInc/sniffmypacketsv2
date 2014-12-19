@@ -1,0 +1,8 @@
+# List of contributors to sniffMyPackets V2.
+
+NOTE:
+Contributors are people whose code is used (although it my be slightly modified) within sniffMyPackets.
+Where possible/applicable original license has been left in the source code.
+
+# Pcredz 1.0.0 - Created by Laurent Gaffie (lgaffie@trustwave.com)
+# Scapy dissectors - Created by Abdulellah Alsaheel (cs_saheel@hotmail.com)

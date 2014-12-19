@@ -11,6 +11,17 @@ __email__ = 'catalyst256@gmail.com'
 __status__ = 'Development'
 
 __all__ = [
+    'emailaddress',
+    'emailattachments',
+    'uploadpcap',
+    'uploadzip',
+    'zipfolder',
+    'getfolder',
+    'md5hash2virustotal',
+    'pcap2stream',
+    'streams2ipaddr',
+    'pcap-ssltraffic',
+    'extract-artifacts',
     'pcap-streams',
     'pcap-geoip',
     'pcap-http',

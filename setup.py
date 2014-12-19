@@ -20,6 +20,7 @@ setup(
         'python-magic',
         'magic',
         'pygeoip',
+        'requests'
     ],
     dependency_links=[
         # custom links for the install_requires

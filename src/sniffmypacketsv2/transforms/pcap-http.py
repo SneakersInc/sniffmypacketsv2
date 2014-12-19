@@ -10,7 +10,7 @@ from scapy.all import *
 from collections import OrderedDict
 from common.entities import pcapFile
 from canari.framework import configure
-from canari.maltego.entities import URL
+from canari.maltego.entities import Website
 from canari.maltego.message import UIMessage
 
 bind_layers(TCP, HTTP)
@@ -55,12 +55,18 @@ def dotransform(request, response):
     # Get the PCAP ID for the pcap file
     try:
         s = x.INDEX.find({"MD5 Hash": md5hash}).count()
+        if s == 0:
+            t = x.STREAMS.find({"MD5 Hash": md5hash}).count()
+            if t > 0:
+                r = x.STREAMS.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
+                for i in r:
+                    pcap_id = i['PCAP ID']
+            else:
+                return response + UIMessage('No PCAP ID, you need to index the pcap file')
         if s > 0:
             r = x.INDEX.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
             for i in r:
                 pcap_id = i['PCAP ID']
-        else:
-            return response + UIMessage('No PCAP ID, you need to index the pcap file')
     except Exception as e:
         return response + UIMessage(str(e))
 
@@ -69,16 +75,15 @@ def dotransform(request, response):
     http_requests = []
     for p in pkts:
         if p.haslayer(HTTPRequest):
-            r = p[HTTPRequest].Path
-            s = len(p[HTTPRequest].Host) + 7
-            r = r[s:]
+            timestamp = datetime.datetime.fromtimestamp(p.time).strftime('%Y-%m-%d %H:%M:%S.%f')
+            r = p[HTTPRequest].Host
             http = OrderedDict({'PCAP ID': pcap_id,
-                                'Time Stamp': datetime.datetime.fromtimestamp(p.time).strftime('%Y-%m-%d %H:%M:%S.%f'),
+                                'Time Stamp': timestamp,
                                 'Type': 'HTTP Request', 'IP': {'src': p[IP].src, 'dst': p[IP].dst},
-                                'HTTP': {'Method': p[HTTPRequest].Method, 'URI': r,
+                                'HTTP': {'Method': p[HTTPRequest].Method, 'URI': p[HTTPRequest].Path,
                                          'Referer': p[HTTPRequest].Referer, 'Host': p[HTTPRequest].Host}})
             # Check if record already exists
-            s = x.Index.find(http).count()
+            s = x.HTTP.find({'Time Stamp': timestamp}).count()
             if s > 0:
                 pass
             else:
@@ -89,7 +94,6 @@ def dotransform(request, response):
             pass
 
     for i in http_requests:
-        h = URL(i)
-        h.ShortTitle = i
+        h = Website(i)
         response += h
     return response

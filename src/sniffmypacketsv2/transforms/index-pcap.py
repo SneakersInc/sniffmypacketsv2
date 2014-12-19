@@ -96,7 +96,7 @@ def dotransform(request, response):
     # General variables used to build the index
     comments = field_values[0]
     now = time.strftime("%c")
-    pcap_id = str(uuid.uuid4()).replace('-', '')
+    pcap_id = str(uuid.uuid4())[:12].replace('-', '')
 
     # Get a count of packets available
     try:
