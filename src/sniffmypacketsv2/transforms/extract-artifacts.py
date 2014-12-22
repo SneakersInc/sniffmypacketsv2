@@ -3,7 +3,7 @@
 import glob
 from common.dbconnect import mongo_connect
 from common.hashmethods import *
-import magic
+from common.auxtools import check_file
 from common.dissectors.dissector import *
 from canari.maltego.message import UIMessage
 from common.entities import pcapFile, Artifact
@@ -34,6 +34,7 @@ __all__ = [
 )
 def dotransform(request, response):
 
+    devnull = open(os.devnull, 'w')
     pcap = request.value
     folder = ''
     # Connect to the database so we can insert the record created below
@@ -78,16 +79,19 @@ def dotransform(request, response):
     dissector.change_dfolder(folder)
     dissector.dissect_pkts(pcap)
     list_files = glob.glob(folder+'/*')
+    # print list_files
 
     # Loop through the stored files and create the database/maltego objects
-    for i in list_files:
+    for g in list_files:
         try:
-            md5hash = md5_for_file(i)
-            sha1hash = sha1_for_file(i)
-            ftype = magic.from_file(i)
-            k = len(folder) + 1
-            l = len(i)
-            filename = i[k:l]
+            md5hash = md5_for_file(g)
+            # print md5hash
+            sha1hash = sha1_for_file(g)
+            # print sha1hash
+            ftype = check_file(g)
+            n = len(folder) + 1
+            l = len(g)
+            filename = g[n:l]
             data = {'PCAP ID': pcap_id, 'Path': folder, 'File Name': filename, 'File Type': ftype, 'MD5 Hash': md5hash,
                     'SHA1 Hash': sha1hash}
             t = d.ARTIFACTS.find({'MD5 Hash': md5hash}).count()
@@ -101,6 +105,6 @@ def dotransform(request, response):
             a.fhash = md5hash
             response += a
         except Exception as e:
-            pass
+            print str(e)
 
     return response

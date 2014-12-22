@@ -2,13 +2,14 @@
 
 # Part of the sniffMyPackets v2 framework
 
-import sqlite3 as lite
+import magic
 
-#
-# def cipher_list(ctype):
-#     # Connect to the local aux database
-#     try:
-#         con = lite.connect('aux.db')
-#         with con:
-#             cur = con.cursor()
-#             cur.execute('SELECT * FROM ciphers WHERE ')
+
+def check_file(filename):
+    try:
+        m = magic.open(magic.MAGIC_NONE)
+        m.load()
+        f = m.file(filename)
+        return f
+    except Exception as e:
+        return str(e)

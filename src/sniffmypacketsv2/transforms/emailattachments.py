@@ -45,7 +45,7 @@ def dotransform(request, response):
                 folder = i['Path']
                 # print folder
         else:
-            pass
+            return response + UIMessage('File not found!!')
     except Exception as e:
         return response + UIMessage(str(e))
     # print folder

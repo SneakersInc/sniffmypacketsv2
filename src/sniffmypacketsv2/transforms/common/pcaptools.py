@@ -23,7 +23,9 @@ def packet_count(pcap):
 def check_pcap(pcap):
     try:
         bad_magic = 'pcap-ng capture file'
-        f = magic.from_file(pcap)
+        m = magic.open(magic.MAGIC_NONE)
+        m.load()
+        f = m.file(pcap)
         if bad_magic in f:
             return 'BAD'
         else:
