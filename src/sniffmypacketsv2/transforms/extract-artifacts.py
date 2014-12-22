@@ -5,7 +5,7 @@ from common.dbconnect import mongo_connect
 from common.hashmethods import *
 from common.auxtools import check_file
 from common.dissectors.dissector import *
-from canari.maltego.message import UIMessage
+from canari.maltego.message import UIMessage, Field
 from common.entities import pcapFile, Artifact
 from canari.framework import configure
 
@@ -103,6 +103,7 @@ def dotransform(request, response):
             a = Artifact(filename)
             a.ftype = ftype
             a.fhash = md5hash
+            a += Field('path', folder, displayname='Path')
             response += a
         except Exception as e:
             print str(e)

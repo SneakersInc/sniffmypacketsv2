@@ -25,7 +25,7 @@ __all__ = [
 
 
 @configure(
-    label='Upload File to Web Server',
+    label='Upload ZipFile to Web Server',
     description='Uploads the zip file to the web server',
     uuids=['sniffMyPacketsv2.v2.zipfile_2_web'],
     inputs=[('[SmP] - Sessions', ZipFile)],
@@ -66,13 +66,14 @@ def dotransform(request, response):
     else:
         data = {'Upload Time': now, 'File Name': filename, 'Folder': folder, 'MD5 Hash': md5hash, 'SHA1 Hash': sha1hash,
                 'Download': download_url, 'PCAP ID': pcap_id}
-        c.insert(data)
+
 
     try:
         # Create the POST request to upload the file
         files = {'files': open(zipfile, 'rb')}
         r = requests.post(upload_url, files=files)
         if r.status_code == 200:
+            c.insert(data)
             return response + UIMessage('File Uploaded!!')
         else:
             return response + UIMessage('Whoops file upload didn\'t work.')

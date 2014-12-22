@@ -79,13 +79,13 @@ def dotransform(request, response):
                     stype = 'Handshake'
                     if x[5] == '01':
                         htype = 'Client Hello'
-                        print x[131:133]
+                        # print x[131:133]
                         slen = int(''.join(x[131:133]), 16)
-                        print slen
+                        # print slen
                         s = 133 + slen
-                        print s
+                        # print s
                         sname = binascii.unhexlify(''.join(x[133:s]))
-                        print sname
+                        # print sname
                         data = {'PCAP ID': pcap_id, 'SSL Type': stype, 'Handshake Type': htype,
                                 'Time Stamp': timestamp,
                                 'Source IP': p[IP].src, 'Source Port': p[TCP].sport, 'Destination IP': p[IP].dst,
@@ -99,9 +99,9 @@ def dotransform(request, response):
                             servers.append(sname)
                     if x[5] == '02':
                         htype = 'Server Hello'
-                        print x[76:78]
+                        # print x[76:78]
                         ctype = ''.join(x[76:78])
-                        print ctype
+                        # print ctype
                         data = {'PCAP ID': pcap_id, 'SSL Type': stype, 'Handshake Type': htype,
                                 'Time Stamp': timestamp,
                                 'Source IP': p[IP].src, 'Source Port': p[TCP].sport, 'Destination IP': p[IP].dst,

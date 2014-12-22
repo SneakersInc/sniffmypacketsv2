@@ -3,7 +3,7 @@
 import requests
 import time
 from canari.config import config
-from common.entities import pcapFile
+from common.entities import Artifact
 from canari.framework import configure
 from canari.maltego.message import UIMessage
 from common.dbconnect import mongo_connect
@@ -25,15 +25,17 @@ __all__ = [
 
 
 @configure(
-    label='Upload PCAP to Web Server',
-    description='Uploads the pcap file to the web server',
-    uuids=['sniffMyPacketsv2.v2.pcapfile_2_web'],
-    inputs=[('[SmP] - PCAP', pcapFile)],
+    label='Upload file to Web Server',
+    description='Uploads a file to the web server',
+    uuids=['sniffMyPacketsv2.v2.artifact_2_web'],
+    inputs=[('[SmP] - Artifacts', Artifact)],
     debug=True
 )
 def dotransform(request, response):
 
-    zipfile = request.value
+    filename = request.value
+    folder = request.fields['path']
+
     # Build the web server variables
     url = config['web/server'].strip('\'')
     port = config['web/port'].strip('\'')
@@ -44,6 +46,7 @@ def dotransform(request, response):
     c = x['FILES']
 
     now = time.strftime("%c")
+    zipfile = '%s/%s' % (folder, filename)
 
     # Hash the pcap file
     try:
@@ -54,27 +57,17 @@ def dotransform(request, response):
 
     # Get the PCAP ID for the pcap file
     try:
-        s = x.INDEX.find({"MD5 Hash": md5hash}).count()
-        if s == 0:
-            t = x.STREAMS.find({"MD5 Hash": md5hash}).count()
-            if t > 0:
-                r = x.STREAMS.find({"MD5 Hash": md5hash}, {"Folder": 1, "PCAP ID": 1, "_id": 0})
-                for i in r:
-                    folder = i['Folder']
-                    pcap_id = i['PCAP ID']
-            else:
-                return response + UIMessage('No PCAP ID, you need to index the pcap file')
+        s = x.ARTIFACTS.find({"MD5 Hash": md5hash}).count()
         if s > 0:
-            r = x.INDEX.find({"MD5 Hash": md5hash}, {"Working Directory": 1, "PCAP ID": 1, "_id": 0})
+            r = x.ARTIFACTS.find({"MD5 Hash": md5hash}, {"File Type": 1, "PCAP ID": 1, "_id": 0})
             for i in r:
-                folder = i['Working Directory']
                 pcap_id = i['PCAP ID']
+                ftype = i['File Type']
+        else:
+            return response + UIMessage('No PCAP ID, you need to index the pcap file')
     except Exception as e:
         return response + UIMessage(str(e))
 
-    f = zipfile.split('/')
-    filename = f[len(f) - 1]
-    filename = filename.replace(':', '')
     download_url = 'http://%s:%s/pcap/downloads/%s' % (url, port, filename)
 
     # Check to see if the file is already uploaded
@@ -84,8 +77,7 @@ def dotransform(request, response):
         return response + UIMessage('File already uploaded!!')
     else:
         data = {'Upload Time': now, 'File Name': filename, 'Folder': folder, 'MD5 Hash': md5hash, 'SHA1 Hash': sha1hash,
-                'Download': download_url, 'PCAP ID': pcap_id}
-
+                'Download': download_url, 'PCAP ID': pcap_id, 'File Type': ftype}
 
     try:
         # Create the POST request to upload the file
@@ -95,6 +87,6 @@ def dotransform(request, response):
             c.insert(data)
             return response + UIMessage('File Uploaded!!')
         else:
-            return response + UIMessage('Whoops file upload didn\'t work.')
+            return response + UIMessage(str(r.status_code))
     except Exception as e:
         return response + UIMessage(str(e))
