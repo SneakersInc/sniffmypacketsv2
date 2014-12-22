@@ -4,9 +4,9 @@
 
 import time
 import requests
-import canari.config
+from canari.config import config
 
-vtapi = canari.config.config['api/vt'].strip('\'')
+vtapi = config['api/vt'].strip('\'')
 
 
 def vt_lookup_file(md5hash):
