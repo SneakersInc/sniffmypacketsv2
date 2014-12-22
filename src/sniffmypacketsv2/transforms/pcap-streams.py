@@ -28,7 +28,7 @@ __all__ = [
 @configure(
     label='Get TCP/UDP Streams',
     description='Extract TCP/UDP streams from pcap file',
-    uuids=[ 'sniffMyPackets.v2.pcap_2_streams'],
+    uuids=['sniffMyPackets.v2.pcap_2_streams'],
     inputs=[('[SmP] - Streams', pcapFile)],
     debug=True
 )

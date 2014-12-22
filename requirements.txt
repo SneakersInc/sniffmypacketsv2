@@ -1,0 +1,7 @@
+canari
+pymongo
+scapy
+python-magic
+magic
+pygeoip
+requests

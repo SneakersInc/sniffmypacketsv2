@@ -14,10 +14,9 @@ setup(
         '' : [ '*.gif', '*.png', '*.conf', '*.mtz', '*.machine' ] # list of resources
     },
     install_requires=[
-        'canari',
+        'canari>=1.1',
         'pymongo>=2.7.2',
         'scapy',
-        'python-magic',
         'magic',
         'pygeoip',
         'requests'
