@@ -61,7 +61,7 @@ def dotransform(request, response):
                 msgdata.append(part.strip())
 
     for item in msgdata:
-        newfolder = '%s/email' % folder
+        newfolder = '%s/emails' % folder
         if not os.path.exists(newfolder):
             os.makedirs(newfolder)
             filename = folder + '/' + 'msgdata.msg'
