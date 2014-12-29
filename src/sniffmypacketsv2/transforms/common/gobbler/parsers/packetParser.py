@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 
+# Welcome to Gobbler, the Scapy pcap parser and dump scripts
+# Part of the sniffMyPackets suite http://www.sniffmypackets.net
+# Written by @catalyst256 / catalyst256@gmail.com
+
 import datetime
+from ..layers.http import *
+from ..layers.BadLayers import *
+from ....common.auxtools import error_logging
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
 from collections import OrderedDict
-from badlayers import *
-from http import *
 
 bind_layers(TCP, HTTP)
 
@@ -16,14 +21,15 @@ def rename_layer(x, n):
     return dict((n+k.lower(), f(v) if hasattr(v, 'keys') else v) for k, v in x.items())
 
 
-def find_layers(pcap):
-    pkts = rdpcap(pcap)
+def find_layers(pkts, pcap, pcap_id, streamid):
     packet = OrderedDict()
     count = 1
+    pcap_id = pcap_id.encode('utf-8')
+    streamid = streamid.encode('utf-8')
     try:
         for p in pkts:
             header = {"Buffer": {"timestamp": datetime.datetime.fromtimestamp(p.time).strftime('%Y-%m-%d %H:%M:%S.%f'),
-                                 "packetnumber": count, "pcapfile": pcap}}
+                                 "packetnumber": count, "pcapfile": pcap, "PCAPID": pcap_id, "StreamID": streamid}}
             packet.update(header)
             counter = 0
             while True:
@@ -43,4 +49,8 @@ def find_layers(pcap):
             yield packet
             packet.clear()
     except Exception as e:
+        error_logging(str(e), 'PacketParser')
         pass
+
+
+

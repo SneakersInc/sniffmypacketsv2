@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from common.gobbler.http import *
+from common.gobbler.layers.http import *
 import datetime
 from common.dbconnect import mongo_connect
 from common.hashmethods import *
