@@ -40,12 +40,12 @@ You are now ready to install sniffMyPacketsv2...
 
 From your working directory clone the github repo using:
 
-git clone https://github.com/catalyst256/sniffMyPacketsv2.git
-cd sniffMyPacketsv2/src
-canari create-profile sniffMyPacketsv2 -w [working directory] 
+git clone https://github.com/SneakersInc/sniffmypacketsv2.git
+cd sniffmypacketsv2/src
+canari create-profile sniffmypacketsv2 -w [working directory] 
 so in my case:
 
--w /root/localTransforms/sniffMyPacketsv2/src
+-w /root/localTransforms/sniffmypacketsv2/src
 This will create a sniffMyPacketsv2.mtz file
 
 Open Maltego, click on the Maltego Icon in the toolbar, then Import - Import Configuration
