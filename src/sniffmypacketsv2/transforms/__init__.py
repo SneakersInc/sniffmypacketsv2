@@ -11,6 +11,10 @@ __email__ = 'catalyst256@gmail.com'
 __status__ = 'Development'
 
 __all__ = [
+    'session_2_dns',
+    'session_2_ipaddr',
+    'session_2_streams',
+    'session_2_pcap',
     'pcap-packets',
     'uploadfile',
     'emailaddress',

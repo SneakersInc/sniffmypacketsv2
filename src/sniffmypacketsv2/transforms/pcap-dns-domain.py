@@ -54,9 +54,11 @@ def dotransform(request, response):
         if s == 0:
             t = x.STREAMS.find({"MD5 Hash": md5hash}).count()
             if t > 0:
-                r = x.STREAMS.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
+                r = x.STREAMS.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "Stream ID": 1, "_id": 0})
                 for i in r:
                     pcap_id = i['PCAP ID']
+                    session_id = i['Stream ID']
+
             else:
                 return response + UIMessage('No PCAP ID, you need to index the pcap file')
         if s > 0:
@@ -73,7 +75,7 @@ def dotransform(request, response):
         if p.haslayer(DNSQR):
             timestamp = datetime.datetime.fromtimestamp(p.time).strftime('%Y-%m-%d %H:%M:%S.%f')
             r = p[DNSQR].qname[:-1]
-            dns = OrderedDict({'PCAP ID': pcap_id,
+            dns = OrderedDict({'PCAP ID': pcap_id, 'Stream ID': session_id,
                                'Time Stamp': timestamp,
                                'Type': 'Request', 'IP': {'src': p[IP].src, 'dst': p[IP].dst, 'length': p[IP].len},
                                'Request Details': {'Query Type': p[DNSQR].qtype, 'Query Name': r}})

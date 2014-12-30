@@ -24,7 +24,7 @@ def error_logging(error, module):
         # Connect to the database so we can insert the record created below
         x = mongo_connect()
         c = x['ERRORS']
-        rec = {'TimeStamp': now, 'Module': module, 'Error Message': error}
+        rec = {'TimeStamp': now, 'Module': module, 'Error Message': e}
         c.insert(rec)
     except:
         pass

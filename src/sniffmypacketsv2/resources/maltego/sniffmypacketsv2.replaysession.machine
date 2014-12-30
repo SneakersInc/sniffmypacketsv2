@@ -1,0 +1,22 @@
+//Welcome to Maltego Machines!
+
+//Each machine starts with a statement like this
+machine("sniffmypacketsv2.replaysession",
+    displayName:"[SmP] - Replay Session (auto)",
+    author:"Adam Maxwell (@catalyst256)",
+    description: "Replays a Session (based on Session ID)") {
+
+
+    onTimer(15) {
+        run("sniffMyPacketsv2.v2.session_2_streams")
+        paths{
+            run("sniffMyPacketsv2.v2.session_2_ipaddr")
+            run("sniffMyPacketsv2.v2.session_2_dns")
+            paths{
+                run("paterva.v2.DNSNameToDomain_DNS")
+                run("paterva.v2.DNSNameToIPAddress_DNS")
+            }
+
+        }
+    }
+}

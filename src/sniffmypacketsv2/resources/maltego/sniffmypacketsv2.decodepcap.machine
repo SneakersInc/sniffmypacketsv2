@@ -6,7 +6,6 @@ machine("sniffmypacketsv2.decodepcap",
     author:"Adam Maxwell (@catalyst256)",
     description: "Extract information out of PCAP file.") {
 
-    //A macro machine has a start function like this
     start {
         paths{
             run("sniffMyPackets.v2.pcap_2_streams")
@@ -19,9 +18,7 @@ machine("sniffmypacketsv2.decodepcap",
             run("sniffMyPacketsv2.v2.streams_2_ipaddress")
             run("sniffMyPacketsv2.v2.pcap_2_http")
             run("sniffMyPacketsv2.v2.pcap_2_artifacts")
-
-
-            
+            run("sniffMyPacketsv2.v2.pcap_2_packets")
         }
     }
 }
