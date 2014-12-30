@@ -19,9 +19,11 @@ setup(
         'scapy',
         'magic',
         'pygeoip',
-        'requests'
+        'requests',
+        'impacket',
+        'pcapy'
     ],
     dependency_links=[
-        # custom links for the install_requires
+        'http://corelabs.coresecurity.com/index.php?module=Wiki&action=attachment&type=tool&page=Pcapy&file=pcapy-0.10.8.tar.gz'
     ]
 )
