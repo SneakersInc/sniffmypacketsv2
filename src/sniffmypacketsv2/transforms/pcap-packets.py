@@ -73,14 +73,17 @@ def dotransform(request, response):
 
     # Dump the full packets into the database for later use.
     x = find_layers(pkts, pcap, pcap_id, streamid)
-    for s in x:
-        pktnum = s['Buffer']['packetnumber']
-        q = d.PACKETS.find({"Buffer.packetnumber": pktnum, "Buffer.StreamID": streamid}).count()
-        if q > 0:
-            pass
-        else:
-            v = OrderedDict(json.loads(json.dumps(s, encoding="latin-1")))
-            c.insert(v)
+    try:
+        for s in x:
+            pktnum = s['Buffer']['packetnumber']
+            q = d.PACKETS.find({"Buffer.packetnumber": pktnum, "Buffer.StreamID": streamid}).count()
+            if q > 0:
+                pass
+            else:
+                v = OrderedDict(json.loads(json.dumps(s, encoding="ascii")))
+                c.insert(v)
+    except Exception as e:
+        error_logging(str(e), 'Packets')
 
     # Build the packet summary so we can make pretty pages.
 
@@ -89,8 +92,8 @@ def dotransform(request, response):
     try:
         for p in pkts:
             tstamp = datetime.datetime.fromtimestamp(p.time).strftime('%Y-%m-%d %H:%M:%S.%f')
-            p_header = {"Buffer": {"timestamp": tstamp, "packetnumber": count, "pcapfile": pcap,
-                                   "packet_length": p.len, "StreamID": streamid, "PCAPID": pcap_id}}
+            p_header = {"PCAP ID": pcap_id, "Buffer": {"timestamp": tstamp, "packetnumber": count, "pcapfile": pcap,
+                                                      "packet_length": p.len, "StreamID": streamid}}
             packet.update(p_header)
             if p.haslayer(IP):
                 p_ip = {"IP": {"ip_src": p[IP].src, "ip_dst": p[IP].dst, "ip_ttl": p[IP].ttl}}
@@ -113,7 +116,7 @@ def dotransform(request, response):
                 counter += 1
             p_layers = {"Layers": layers}
             packet.update(p_layers)
-            view_url = 'http://%s:%s/pcap/%s/packets/%s' % (url, port, streamid, count)
+            view_url = 'http://%s:%s/pcap/%s/%s/packets/%s' % (url, port, pcap_id, streamid, count)
             p_view = {"View": view_url}
             packet.update(p_view)
             t = d.PACKETSUMMARY.find({"Buffer.packetnumber": count, "Buffer.StreamID": streamid}).count()

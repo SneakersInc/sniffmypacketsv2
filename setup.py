@@ -17,7 +17,7 @@ setup(
         'canari>=1.1',
         'pymongo>=2.7.2',
         'scapy',
-        'magic',
+        'python-magic>=0.4.6',
         'pygeoip',
         'requests',
         'impacket',
