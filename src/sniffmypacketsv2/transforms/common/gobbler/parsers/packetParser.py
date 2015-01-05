@@ -30,7 +30,7 @@ def find_layers(pkts, pcap, pcap_id, streamid):
     try:
         for p in pkts:
             header = {"Buffer": {"timestamp": datetime.datetime.fromtimestamp(p.time).strftime('%Y-%m-%d %H:%M:%S.%f'),
-                                 "packetnumber": count, "pcapfile": pcap, "PCAPID": pcap_id, "StreamID": streamid}}
+                                 "packetnumber": count, "PCAP ID": pcap_id, "pcapfile": pcap, "StreamID": streamid}}
             packet.update(header)
             counter = 0
             while True:
@@ -42,6 +42,10 @@ def find_layers(pkts, pcap, pcap_id, streamid):
                     s = rename_layer(t, layer.name)
                     v = '{"' + layer.name.replace('.', '_') + '[' + str(i) + ']' + '":' + str(s) + '}'
                     s = eval(v)
+                    try:
+                        del s['HTTP[3]']
+                    except KeyError:
+                        pass
                     packet.update(s)
                 else:
                     break

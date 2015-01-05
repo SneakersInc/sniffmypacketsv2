@@ -49,6 +49,17 @@ def dotransform(request, response):
     except Exception as e:
         return response + UIMessage(str(e))
 
+    def convert_encoding(data, encoding='utf-8'):
+        if isinstance(data, dict):
+            return dict((convert_encoding(key), convert_encoding(value)) \
+                        for key, value in data.iteritems())
+        elif isinstance(data, list):
+            return [convert_encoding(element) for element in data]
+        elif isinstance(data, unicode):
+            return data.encode(encoding, errors='replace')
+        else:
+            return data
+
     # Get the PCAP ID for the pcap file
     try:
         s = d.INDEX.find({"MD5 Hash": md5pcap}).count()
@@ -80,7 +91,7 @@ def dotransform(request, response):
             if q > 0:
                 pass
             else:
-                v = OrderedDict(json.loads(json.dumps(s, encoding="ascii")))
+                v = OrderedDict(json.loads(json.dumps(convert_encoding(s), encoding='latin-1', ensure_ascii=False)))
                 c.insert(v)
     except Exception as e:
         error_logging(str(e), 'Packets')
