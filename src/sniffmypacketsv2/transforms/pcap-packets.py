@@ -120,8 +120,11 @@ def dotransform(request, response):
             counter = 0
             while True:
                 layer = p.getlayer(counter)
-                if (layer != None):
-                    layers.append(layer.name)
+                if layer != None:
+                    if layer.name == 'HTTP':
+                        pass
+                    else:
+                        layers.append(layer.name)
                 else:
                     break
                 counter += 1
