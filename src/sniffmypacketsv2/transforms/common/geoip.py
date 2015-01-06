@@ -9,8 +9,8 @@ from canari.config import config
 
 def lookup_geo(ip):
     try:
-        homelat = config['geoip/homelat'].strip('\'')
-        homelng = config['geoip/homelng'].strip('\'')
+        # homelat = config['geoip/homelat'].strip('\'')
+        # homelng = config['geoip/homelng'].strip('\'')
         db = config['geoip/db'].strip('\'')
         try:
             gi = pygeoip.GeoIP(db)
@@ -19,8 +19,5 @@ def lookup_geo(ip):
         rec = gi.record_by_addr(ip)
         if rec is not None:
             return rec
-        else:
-            geo = {'latitude': homelat, 'longitude': homelng, 'country_name': 'N/A'}
-            return geo
     except Exception as e:
         return str(e)

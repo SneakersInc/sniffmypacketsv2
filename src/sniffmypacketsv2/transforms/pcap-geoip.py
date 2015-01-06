@@ -74,37 +74,41 @@ def dotransform(request, response):
     for p in pkts:
         if p.haslayer(IP) and p.haslayer(TCP):
             proto = 'TCP'
-            s = proto, p[IP].src, p[TCP].sport, p[IP].dst, p[TCP].dport
-            r = proto, p[IP].dst, p[TCP].dport, p[IP].src, p[TCP].sport
+            s = proto, p[IP].src, p[TCP].sport
+            r = proto, p[IP].dst, p[TCP].dport
             if s not in convo:
                 convo.append(s)
             if r in convo:
                 convo.remove(r)
+            else:
+                convo.append(r)
         else:
             pass
         if p.haslayer(IP) and p.haslayer(UDP):
             proto = 'UDP'
-            s = proto, p[IP].src, p[UDP].sport, p[IP].dst, p[UDP].dport
-            r = proto, p[IP].dst, p[UDP].dport, p[IP].src, p[UDP].sport
+            s = proto, p[IP].src, p[UDP].sport
+            r = proto, p[IP].dst, p[UDP].dport
             if s not in convo:
                 convo.append(s)
             if r in convo:
                 convo.remove(r)
+            else:
+                convo.append(r)
         else:
             pass
 
     # Run each IP through a GeoIP lookup and build a directory object to insert into the database
-    for proto, src, sport, dst, dport in convo:
+    for proto, src, sport in convo:
         s = lookup_geo(src)
-        d = lookup_geo(dst)
-        geo = OrderedDict({'PCAP ID': pcap_id, 'Protocol': proto, 'src': src, 'src port': sport, 'src geo': s,
-                           'dst': dst, 'dst port': dport, 'dst geo': d})
-
-        t = x.GEOIP.find({'src': src, 'src port': sport, 'dst': dst, 'dst port': dport}).count()
-        if t > 0:
-            pass
+        if s is not None:
+            geo = OrderedDict({'PCAP ID': pcap_id, 'Protocol': proto, 'src': src, 'src port': sport, 'src geo': s})
+            t = x.GEOIP.find({'src': src, 'src port': sport}).count()
+            if t > 0:
+                pass
+            else:
+                c.insert(geo)
         else:
-            c.insert(geo)
+            pass
 
     # Build the URL for the returned Maltego entity
     url = config['web/server'].strip('\'')
