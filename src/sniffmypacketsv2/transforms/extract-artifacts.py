@@ -85,16 +85,14 @@ def dotransform(request, response):
     for g in list_files:
         try:
             md5hash = md5_for_file(g)
-            # print md5hash
             sha1hash = sha1_for_file(g)
-            # print sha1hash
             ftype = check_file(g)
             n = len(folder) + 1
             l = len(g)
             filename = g[n:l]
             data = {'PCAP ID': pcap_id, 'Path': folder, 'File Name': filename, 'File Type': ftype, 'MD5 Hash': md5hash,
                     'SHA1 Hash': sha1hash}
-            t = d.ARTIFACTS.find({'MD5 Hash': md5hash}).count()
+            t = d.ARTIFACTS.find({'MD5 Hash': md5hash, "File Name": filname}).count()
             if t > 0:
                 pass
             else:

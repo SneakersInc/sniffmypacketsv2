@@ -21,7 +21,8 @@ setup(
         'pygeoip',
         'requests',
         'impacket',
-        'pcapy'
+        'pcapy',
+        'tldextract'
     ],
     dependency_links=[
         'http://corelabs.coresecurity.com/index.php?module=Wiki&action=attachment&type=tool&page=Pcapy&file=pcapy-0.10.8.tar.gz'

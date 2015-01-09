@@ -106,7 +106,6 @@ class Decoder:
                 src = (ip.get_ip_src(), udp.get_uh_sport())
                 dst = (ip.get_ip_dst(), udp.get_uh_dport())
                 con = Connection(proto, src, dst)
-
             # If there isn't an entry associated yetwith this connection,
             # open a new pcapdumper and create an association.
             if not self.connections.has_key(con):

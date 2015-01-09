@@ -76,8 +76,10 @@ def dotransform(request, response):
             r = d.INDEX.find({"MD5 Hash": md5pcap}, {"PCAP ID": 1, "_id": 0})
             for i in r:
                 pcap_id = i['PCAP ID']
+                streamid = i['PCAP ID']
     except Exception as e:
         return response + UIMessage(str(e))
+
 
     stream_url = 'http://%s:%s/pcap/%s/packets' % (url, port, streamid)
     pkts = loadpackets(pcap)
@@ -86,8 +88,8 @@ def dotransform(request, response):
     x = find_layers(pkts, pcap, pcap_id, streamid)
     try:
         for s in x:
-            pktnum = s['Buffer']['packetnumber']
-            q = d.PACKETS.find({"Buffer.packetnumber": pktnum, "Buffer.StreamID": streamid}).count()
+            tstamp = s['Buffer']['timestamp']
+            q = d.PACKETS.find({"Buffer.timestamp": tstamp}).count()
             if q > 0:
                 pass
             else:
@@ -97,25 +99,17 @@ def dotransform(request, response):
         error_logging(str(e), 'Packets')
 
     # Build the packet summary so we can make pretty pages.
-
     count = 1
     packet = OrderedDict()
     try:
         for p in pkts:
             tstamp = datetime.datetime.fromtimestamp(p.time).strftime('%Y-%m-%d %H:%M:%S.%f')
             p_header = {"PCAP ID": pcap_id, "Buffer": {"timestamp": tstamp, "packetnumber": count, "pcapfile": pcap,
-                                                      "packet_length": p.len, "StreamID": streamid}}
+                                                       "packet_length": p.len, "StreamID": streamid}}
             packet.update(p_header)
             if p.haslayer(IP):
                 p_ip = {"IP": {"ip_src": p[IP].src, "ip_dst": p[IP].dst, "ip_ttl": p[IP].ttl}}
                 packet.update(p_ip)
-            if p.haslayer(TCP):
-                p_tcp = {"TCP": {"tcp_sport": p[TCP].sport, "tcp_dport": p[TCP].dport, "tcp_flags": p[TCP].flags}}
-                packet.update(p_tcp)
-            if p.haslayer(UDP):
-                p_udp = {"UDP": {"udp_sport": p[UDP].sport, "udp_dport": p[UDP].dport, "udp_len": p[UDP].len}}
-                packet.update(p_udp)
-
             layers = []
             counter = 0
             while True:
@@ -133,7 +127,7 @@ def dotransform(request, response):
             view_url = 'http://%s:%s/pcap/%s/%s/packets/%s' % (url, port, pcap_id, streamid, count)
             p_view = {"View": view_url}
             packet.update(p_view)
-            t = d.PACKETSUMMARY.find({"Buffer.packetnumber": count, "Buffer.StreamID": streamid}).count()
+            t = d.PACKETSUMMARY.find({"Buffer.timestamp": tstamp}).count()
             if t > 0:
                 pass
             else:

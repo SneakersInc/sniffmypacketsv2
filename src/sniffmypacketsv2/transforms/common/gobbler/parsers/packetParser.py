@@ -44,6 +44,7 @@ def find_layers(pkts, pcap, pcap_id, streamid):
                     s = eval(v)
                     try:
                         del s['HTTP[3]']
+                        del s['HTTP[5]']
                     except KeyError:
                         pass
                     packet.update(s)
