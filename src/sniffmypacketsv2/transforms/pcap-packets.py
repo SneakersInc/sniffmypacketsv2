@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
+import json
 from common.hashmethods import *
 from common.dbconnect import mongo_connect
 from common.entities import pcapFile, pcapStream
 from canari.maltego.message import UIMessage
-from common.gobbler.parsers.loadpackets import loadpackets
-from common.gobbler.parsers.packetParser import *
-from common.gobbler.uploaders.uploaders import *
+from common.loadpackets import loadpackets
+from common.packetParser import *
 from canari.framework import configure
 from canari.config import config
 from common.auxtools import error_logging

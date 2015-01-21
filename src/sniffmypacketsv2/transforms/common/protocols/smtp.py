@@ -1,13 +1,11 @@
 import base64
-import base64
-import os
 import string
-import random
+
+from scapy.layers.inet import *
 from scapy.packet import *
 from scapy.fields import *
-from scapy.ansmachine import *
-from scapy.layers.inet import *
-import dissector
+
+from sniffmypacketsv2.transforms.common.protocols import dissector
 
 
 def name_generator(size=9, chars=string.ascii_uppercase + string.digits):

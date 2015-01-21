@@ -1,8 +1,6 @@
-from scapy.packet import *
-from scapy.fields import *
-from scapy.ansmachine import *
 from scapy.layers.inet import *
-import dissector
+
+from sniffmypacketsv2.transforms.common.protocols import dissector
 
 
 class IRCResField(StrField):

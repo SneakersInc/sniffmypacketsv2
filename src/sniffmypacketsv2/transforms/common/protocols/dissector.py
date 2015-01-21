@@ -293,7 +293,7 @@ class Dissector(Packet):
                name.startswith("smb") and name.endswith("smb") or\
                 name.startswith("sip") and name.endswith("sip") or\
                  name.startswith("telnet") and name.endswith("telnet") or\
-                  name.startswith("smtp") or name.startswith("ssh") or\
+                  name.startswith("smtp") or name.endswith("smtp") or\
                    name.startswith("imap") and name.endswith("imap") or\
                     name.startswith("pop") and name.endswith("pop"):
             return True

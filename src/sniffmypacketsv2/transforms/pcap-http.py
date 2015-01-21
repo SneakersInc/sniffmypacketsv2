@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-from common.gobbler.layers.http import *
 import datetime
+import logging
+
+from sniffmypacketsv2.transforms.common.layers.http import *
 from common.dbconnect import mongo_connect
 from common.hashmethods import *
-import logging
+
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
 from collections import OrderedDict

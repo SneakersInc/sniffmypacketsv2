@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import re
 from common.dbconnect import mongo_connect
 from common.hashmethods import *
 from common.entities import pcapFile
@@ -10,6 +9,7 @@ from scapy.all import *
 from canari.maltego.entities import EmailAddress
 from canari.maltego.message import UIMessage
 from canari.framework import configure
+import re
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -79,7 +79,7 @@ def dotransform(request, response):
         return response + UIMessage(str(e))
 
     for x in addr:
-        data = {'PCAP ID': pcap_id, 'Type': 'Email', 'Record': x}
+        data = {'PCAP ID': pcap_id, 'Type': 'Email Address', 'Record': x}
         t = d.CREDS.find({'Record': x}).count()
         if t > 0:
             pass

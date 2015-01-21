@@ -1,12 +1,10 @@
 import binascii
 import base64
-import json
-from scapy.packet import *
-from scapy.utils import *
-from scapy.fields import *
-from scapy.ansmachine import *
+
 from scapy.layers.inet import *
-import dissector
+
+from sniffmypacketsv2.transforms.common.protocols import dissector
+
 
 preprocess_sessions = []
 sessions = []

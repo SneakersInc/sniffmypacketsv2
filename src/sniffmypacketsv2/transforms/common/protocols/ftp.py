@@ -1,11 +1,8 @@
 import base64
-import os
 import string
-import random
-from scapy.packet import *
-from scapy.fields import *
-from scapy.ansmachine import *
+
 from scapy.layers.inet import *
+
 import dissector
 
 

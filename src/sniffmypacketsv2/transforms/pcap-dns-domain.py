@@ -30,9 +30,9 @@ __all__ = [
 
 
 @configure(
-    label='Find DNS Requests',
-    description='Find DNS requests in a pcap file',
-    uuids=['sniffMyPacketsv2.v2.pcap_2_dnsrequests'],
+    label='Find DNS Domains',
+    description='Find DNS Domains in a pcap file',
+    uuids=['sniffMyPacketsv2.v2.pcap_2_dnsdomains'],
     inputs=[('[SmP] - DNS', pcapFile)],
     debug=True
 )

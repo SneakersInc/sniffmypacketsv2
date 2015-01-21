@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Part of the sniffMyPackets v2 framework
+
 from canari.config import config
 import pymongo
 

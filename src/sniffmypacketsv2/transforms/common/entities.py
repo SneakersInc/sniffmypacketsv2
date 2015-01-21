@@ -72,3 +72,7 @@ class ZipFile(Sniffmypacketsv2Entity):
 
 class EmailAttachment(Sniffmypacketsv2Entity):
     pass
+
+
+class Credential(Sniffmypacketsv2Entity):
+    pass

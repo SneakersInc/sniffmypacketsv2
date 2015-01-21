@@ -11,6 +11,7 @@ __email__ = 'catalyst256@gmail.com'
 __status__ = 'Development'
 
 __all__ = [
+    'find-smtp-creds',
     'session_2_dns',
     'session_2_ipaddr',
     'session_2_streams',

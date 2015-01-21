@@ -1,17 +1,17 @@
+from scapy.layers.inet import *
 from scapy.packet import *
 from scapy.fields import *
-from scapy.ansmachine import *
-from scapy.layers.inet import *
-import dissector
+
+from sniffmypacketsv2.transforms.common.protocols import dissector
 
 
-class POPField(StrField):
+class IMAPField(StrField):
     """
-    field class for handling pop requests
+    field class for handling imap packets
     @attention: it inherets StrField from Scapy library
     """
     holds_packets = 1
-    name = "POPField"
+    name = "IMAPField"
 
     def getfield(self, pkt, s):
         """
@@ -26,17 +26,17 @@ class POPField(StrField):
         cstream = -1
         if pkt.underlayer.name == "TCP":
             cstream = dissector.check_stream(\
-            pkt.underlayer.underlayer.fields["src"],\
-             pkt.underlayer.underlayer.fields["dst"],\
-              pkt.underlayer.fields["sport"],\
-               pkt.underlayer.fields["dport"],\
-                pkt.underlayer.fields["seq"], s)
+                        pkt.underlayer.underlayer.fields["src"],\
+                         pkt.underlayer.underlayer.fields["dst"],\
+                          pkt.underlayer.fields["sport"],\
+                           pkt.underlayer.fields["dport"],\
+                            pkt.underlayer.fields["seq"], s)
         if not cstream == -1:
             s = cstream
         remain = ""
         value = ""
         ls = s.splitlines()
-        myresult = []
+        myresult = ""
         lslen = len(ls)
         i = 0
         k = 0
@@ -52,13 +52,13 @@ class POPField(StrField):
                     remain = remain + ls2[c] + " "
                     c = c + 1
                 if self.name.startswith("request"):
-                    myresult = myresult + "Request Command: " + value +\
-                    ", Request Parameter(s): " + remain
+                    myresult = myresult + "Request Tag: " +\
+                            value + ", Request Argument: " + remain
                     if k < lslen:
                         myresult = myresult + " | "
                 if self.name.startswith("response"):
-                    myresult = myresult + "Response Indicator: " + value +\
-                    ", Response Parameter(s): " + remain
+                    myresult = myresult + "Response Tag: " +\
+                    value + ", Response Argument: " + remain
                     if k < lslen:
                         myresult = myresult + " | "
             i = i + 1
@@ -79,23 +79,23 @@ class POPField(StrField):
         StrField.__init__(self, name, default, fmt, remain)
 
 
-class POPRes(Packet):
+class IMAPRes(Packet):
     """
-    class for handling pop responses
+    class for handling imap responses
     @attention: it inherets Packet from Scapy library
     """
-    name = "pop"
-    fields_desc = [POPField("response", "", "H")]
+    name = "imap"
+    fields_desc = [IMAPField("response", "", "H")]
 
 
-class POPReq(Packet):
+class IMAPReq(Packet):
     """
-    class for handling pop requests
+    class for handling imap requests
     @attention: it inherets Packet from Scapy library
     """
-    name = "pop"
-    fields_desc = [POPField("request", "", "H")]
+    name = "imap"
+    fields_desc = [IMAPField("request", "", "H")]
 
 
-bind_layers(TCP, POPReq, dport=110)
-bind_layers(TCP, POPRes, sport=110)
+bind_layers(TCP, IMAPReq, dport=143)
+bind_layers(TCP, IMAPRes, sport=143)

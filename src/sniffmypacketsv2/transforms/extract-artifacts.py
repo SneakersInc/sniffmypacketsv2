@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 
+
 import glob
+
+from canari.maltego.message import UIMessage
+from canari.framework import configure
+
 from common.dbconnect import mongo_connect
 from common.hashmethods import *
 from common.auxtools import check_file
-from common.dissectors.dissector import *
-from canari.maltego.message import UIMessage, Field
+from common.protocols.dissector import *
 from common.entities import pcapFile, Artifact
-from canari.framework import configure
+
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -92,7 +96,7 @@ def dotransform(request, response):
             filename = g[n:l]
             data = {'PCAP ID': pcap_id, 'Path': folder, 'File Name': filename, 'File Type': ftype, 'MD5 Hash': md5hash,
                     'SHA1 Hash': sha1hash}
-            t = d.ARTIFACTS.find({'MD5 Hash': md5hash, "File Name": filname}).count()
+            t = d.ARTIFACTS.find({'MD5 Hash': md5hash, "File Name": filename}).count()
             if t > 0:
                 pass
             else:

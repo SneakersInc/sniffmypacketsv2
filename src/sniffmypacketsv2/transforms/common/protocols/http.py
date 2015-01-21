@@ -114,7 +114,7 @@ class HTTPReqField(StrField):
             if length == 3:
                 value = "Method:" + f[0] + ", Request-URI:" +\
                         f[1] + ", HTTP-Version:" + f[2]
-                HTTPMethodsRFC2616 = ['get','post','options','head','put','delete','trace','connect'] 
+                HTTPMethodsRFC2616 = ['get','post','options','head','put','delete','trace','connect']
                 #HTTP methods as per rfc2616 http://www.ietf.org/rfc/rfc2616
                 #There are other methods in other RFCs but nobody cares about those.
                 if f[0].lower() in HTTPMethodsRFC2616:

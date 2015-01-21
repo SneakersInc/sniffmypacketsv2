@@ -15,7 +15,6 @@ __all__ = [
     'dbconnect',
     'hashmethods',
     'pcaptools',
-    'gobbler.layers',
-    'gobbler.parsers',
-    'dissectors'
+    'layers',
+    'protocols'
 ]
