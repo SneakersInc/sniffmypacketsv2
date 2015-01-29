@@ -3,17 +3,22 @@ sniffmypacketsv2
 
 Next major release of sniffMyPackets - Now with added packet loving
 
-###NOTE:  This version of sniffMyPackets requires a MongoDB backend (currently) to store packet information in. If you don't have one of these then you can find one in this repo:  
+####NOTE:  You can now choose to use a database backend or not. This is defined in the ```sniffmypacketsv2.conf``` file which will be created when you run the ```canari create-profile``` command listed below.  
+
+Once you have the sniffmypacketsv2.conf file, open it in a text editor and change the usedb value from 0 to 1.:
+
 https://github.com/SneakersInc/sniffmypacketsv2-web
   
-  
+    
 These instructions are to install sniffMyPacketsv2 onto your machine. In order for the transforms to work you need to have the following 2 components installed:
 
 1. Maltego
 
 2. Canari Framework
+  
+Installation Instructions:  
 
-1. Maltego
+Maltego
 
 Download Maltego from their website or if you are using BackTrack/Kali its installed by default.
 
@@ -21,11 +26,11 @@ Run Maltego so it creates the required folders and directory structure
 Go through the default configuration for the first run (that wizard thing)  
 Close Maltego  
 
-2. Canari Framework
+Canari Framework
 
 The recommended method is to get Canari from the github repo here:
 
-Canari Framework
+Canari Framework - https://github.com/allfro/canari
 
 From the directory you wish to have Canari installed run the following commands:
 ```
@@ -61,10 +66,10 @@ so in my case:
 ```
 -w /root/localTransforms/sniffmypacketsv2/src
   ```
-This will create a sniffMyPacketsv2.mtz file
+This will create a sniffmypacketsv2.mtz file (and sniffmypackets.conf)
 
 Open Maltego, click on the Maltego Icon in the toolbar, then Import - Import Configuration
 
 Follow the wizard to install the transforms, entities and machine into Maltego
 
-All the sniffMyPacketsv2 transforms and entities are under the [SmP] headings
+All the sniffmypacketsv2 transforms and entities are under the [SmP] headings
