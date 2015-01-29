@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
-from common.dbconnect import mongo_connect
+from common.dbconnect import mongo_connect, find_session
 from common.hashmethods import *
 import tldextract
 import logging
@@ -13,6 +13,7 @@ from canari.maltego.entities import Domain
 from canari.maltego.message import UIMessage
 from canari.framework import configure
 from common.auxtools import error_logging
+from canari.config import config
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -39,39 +40,24 @@ __all__ = [
 def dotransform(request, response):
     # Store the pcap file as a variable
     pcap = request.value
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb > 0:
+        # Connect to the database so we can insert the record created below
+        x = mongo_connect()
+        c = x['DNS']
+        # Hash the pcap file
+        try:
+            md5hash = md5_for_file(pcap)
+        except Exception as e:
+            return response + UIMessage(str(e))
+        # Get the session and/or pcap id
+        d = find_session(md5hash)
+        pcap_id = d[0]
+        session_id = d[1]
+    else:
+        pass
 
-    # Connect to the database so we can insert the record created below
-    x = mongo_connect()
-    c = x['DNS']
-
-    # Hash the pcap file
-    try:
-        md5hash = md5_for_file(pcap)
-    except Exception as e:
-        return response + UIMessage(str(e))
-
-    # Get the PCAP ID for the pcap file
-    try:
-        s = x.INDEX.find({"MD5 Hash": md5hash}).count()
-        if s == 0:
-            t = x.STREAMS.find({"MD5 Hash": md5hash}).count()
-            if t > 0:
-                r = x.STREAMS.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "Stream ID": 1, "_id": 0})
-                for i in r:
-                    pcap_id = i['PCAP ID']
-                    session_id = i['Stream ID']
-
-            else:
-                return response + UIMessage('No PCAP ID, you need to index the pcap file')
-        if s > 0:
-            r = x.INDEX.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
-            for i in r:
-                pcap_id = i['PCAP ID']
-                session_id = i['PCAP ID']
-    except Exception as e:
-        return response + UIMessage(str(e))
-
-    # Find the DNS requests and responses
     try:
         pkts = rdpcap(pcap)
         dns_requests = []
@@ -81,16 +67,18 @@ def dotransform(request, response):
                 r = p[DNSQR].qname[:-1]
                 tld = tldextract.extract(r)
                 domain = tld.registered_domain
-                # print domain
-                dns = OrderedDict({'PCAP ID': pcap_id, 'Stream ID': session_id,
-                                   'Time Stamp': timestamp,
-                                   'Type': 'Request', 'IP': {'src': p[IP].src, 'dst': p[IP].dst, 'length': p[IP].len},
-                                   'Request Details': {'Query Type': p[DNSQR].qtype, 'Query Name': r, 'Domain': domain}})
-                t = x.DNS.find({'Time Stamp': timestamp}).count()
-                if t > 0:
-                    pass
+                if usedb > 0:
+                    dns = OrderedDict({'PCAP ID': pcap_id, 'Stream ID': session_id,
+                                       'Time Stamp': timestamp,
+                                       'Type': 'Request', 'IP': {'src': p[IP].src, 'dst': p[IP].dst, 'length': p[IP].len},
+                                       'Request Details': {'Query Type': p[DNSQR].qtype, 'Query Name': r, 'Domain': domain}})
+                    t = x.DNS.find({'Time Stamp': timestamp}).count()
+                    if t > 0:
+                        pass
+                    else:
+                        c.insert(dns)
                 else:
-                    c.insert(dns)
+                    pass
                 if r not in dns_requests:
                     dns_requests.append(domain)
             else:
@@ -102,4 +90,7 @@ def dotransform(request, response):
         return response
 
     except Exception as e:
-        error_logging(str(e), 'DNS Requests')
+        if usedb > 0:
+            error_logging(str(e), 'DNS Requests')
+        else:
+            return response + UIMessage(str(e))

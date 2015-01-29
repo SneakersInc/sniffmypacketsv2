@@ -4,7 +4,7 @@ import datetime
 import logging
 
 from sniffmypacketsv2.transforms.common.layers.http import *
-from common.dbconnect import mongo_connect
+from common.dbconnect import mongo_connect, find_session
 from common.hashmethods import *
 
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
@@ -14,6 +14,7 @@ from common.entities import pcapFile
 from canari.framework import configure
 from canari.maltego.entities import Website
 from canari.maltego.message import UIMessage
+from canari.config import config
 
 bind_layers(TCP, HTTP)
 
@@ -43,34 +44,23 @@ def dotransform(request, response):
 
     # Store the pcap file as a variable
     pcap = request.value
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb > 0:
+        # Connect to the database so we can insert the record created below
+        x = mongo_connect()
+        c = x['HTTP']
 
-    # Connect to the database so we can insert the record created below
-    x = mongo_connect()
-    c = x['HTTP']
+        # Hash the pcap file
+        try:
+            md5hash = md5_for_file(pcap)
+        except Exception as e:
+            return response + UIMessage(str(e))
 
-    # Hash the pcap file
-    try:
-        md5hash = md5_for_file(pcap)
-    except Exception as e:
-        return response + UIMessage(str(e))
-
-    # Get the PCAP ID for the pcap file
-    try:
-        s = x.INDEX.find({"MD5 Hash": md5hash}).count()
-        if s == 0:
-            t = x.STREAMS.find({"MD5 Hash": md5hash}).count()
-            if t > 0:
-                r = x.STREAMS.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
-                for i in r:
-                    pcap_id = i['PCAP ID']
-            else:
-                return response + UIMessage('No PCAP ID, you need to index the pcap file')
-        if s > 0:
-            r = x.INDEX.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
-            for i in r:
-                pcap_id = i['PCAP ID']
-    except Exception as e:
-        return response + UIMessage(str(e))
+        d = find_session(md5hash)
+        pcap_id = d[0]
+    else:
+        pass
 
     # Find HTTP Requests
     pkts = rdpcap(pcap)
@@ -79,17 +69,18 @@ def dotransform(request, response):
         if p.haslayer(HTTPRequest):
             timestamp = datetime.datetime.fromtimestamp(p.time).strftime('%Y-%m-%d %H:%M:%S.%f')
             r = p[HTTPRequest].Host
-            http = OrderedDict({'PCAP ID': pcap_id,
-                                'Time Stamp': timestamp,
-                                'Type': 'HTTP Request', 'IP': {'src': p[IP].src, 'dst': p[IP].dst},
-                                'HTTP': {'Method': p[HTTPRequest].Method, 'URI': p[HTTPRequest].Path,
-                                         'Referer': p[HTTPRequest].Referer, 'Host': p[HTTPRequest].Host}})
-            # Check if record already exists
-            s = x.HTTP.find({'Time Stamp': timestamp}).count()
-            if s > 0:
-                pass
-            else:
-                c.insert(http)
+            if usedb > 0:
+                http = OrderedDict({'PCAP ID': pcap_id,
+                                    'Time Stamp': timestamp,
+                                    'Type': 'HTTP Request', 'IP': {'src': p[IP].src, 'dst': p[IP].dst},
+                                    'HTTP': {'Method': p[HTTPRequest].Method, 'URI': p[HTTPRequest].Path,
+                                             'Referer': p[HTTPRequest].Referer, 'Host': p[HTTPRequest].Host}})
+                # Check if record already exists
+                s = x.HTTP.find({'Time Stamp': timestamp}).count()
+                if s > 0:
+                    pass
+                else:
+                    c.insert(http)
             if r not in http_requests:
                 http_requests.append(r)
         else:

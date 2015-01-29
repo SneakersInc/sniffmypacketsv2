@@ -3,7 +3,6 @@
 from common.entities import pcapFile, GeoMap
 from common.dbconnect import mongo_connect
 from common.hashmethods import *
-import datetime
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
@@ -39,7 +38,12 @@ def dotransform(request, response):
 
     # Store the pcap file as a variable
     pcap = request.value
-
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb == 0:
+        return response + UIMessage('No database in use, so this is pointless!!!')
+    else:
+        pass
     # Connect to the database so we can insert the record created below
     x = mongo_connect()
     c = x['GEOIP']

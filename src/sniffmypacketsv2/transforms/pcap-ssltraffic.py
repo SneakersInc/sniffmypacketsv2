@@ -3,7 +3,7 @@
 import binascii
 import datetime
 from common.hashmethods import *
-from common.dbconnect import mongo_connect
+from common.dbconnect import mongo_connect, find_session
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
@@ -11,6 +11,7 @@ from common.entities import pcapFile
 from canari.maltego.message import UIMessage
 from canari.maltego.entities import Website
 from canari.framework import configure
+from canari.config import config
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -35,34 +36,22 @@ __all__ = [
 )
 def dotransform(request, response):
     pcap = request.value
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb > 0:
+        # Connect to the database so we can insert the record created below
+        d = mongo_connect()
+        c = d['SSL']
 
-    # Connect to the database so we can insert the record created below
-    d = mongo_connect()
-    c = d['SSL']
-
-    # Hash the pcap file
-    try:
-        md5hash = md5_for_file(pcap)
-    except Exception as e:
-        return response + UIMessage(str(e))
-
-    # Get the PCAP ID for the pcap file
-    try:
-        s = d.INDEX.find({"MD5 Hash": md5hash}).count()
-        if s == 0:
-            t = d.STREAMS.find({"MD5 Hash": md5hash}).count()
-            if t > 0:
-                r = d.STREAMS.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
-                for i in r:
-                    pcap_id = i['PCAP ID']
-            else:
-                return response + UIMessage('No PCAP ID, you need to index the pcap file')
-        if s > 0:
-            r = d.INDEX.find({"MD5 Hash": md5hash}, {"PCAP ID": 1, "_id": 0})
-            for i in r:
-                pcap_id = i['PCAP ID']
-    except Exception as e:
-        return response + UIMessage(str(e))
+        # Hash the pcap file
+        try:
+            md5hash = md5_for_file(pcap)
+        except Exception as e:
+            return response + UIMessage(str(e))
+        d = find_session(md5hash)
+        pcap_id = d[0]
+    else:
+        pass
 
     # Load the packets
     pkts = rdpcap(pcap)
@@ -79,38 +68,39 @@ def dotransform(request, response):
                     stype = 'Handshake'
                     if x[5] == '01':
                         htype = 'Client Hello'
-                        # print x[131:133]
                         slen = int(''.join(x[131:133]), 16)
-                        # print slen
                         s = 133 + slen
-                        # print s
                         sname = binascii.unhexlify(''.join(x[133:s]))
-                        # print sname
-                        data = {'PCAP ID': pcap_id, 'SSL Type': stype, 'Handshake Type': htype,
-                                'Time Stamp': timestamp,
-                                'Source IP': p[IP].src, 'Source Port': p[TCP].sport, 'Destination IP': p[IP].dst,
-                                'Destination Port': p[TCP].dport, 'Server Name': sname}
-                        t = d.SSL.find({'Time Stamp': timestamp}).count()
-                        if t > 0:
-                            pass
-                        else:
-                            c.insert(data)
                         if sname not in servers:
                             servers.append(sname)
+                        if usedb > 0:
+                            data = {'PCAP ID': pcap_id, 'SSL Type': stype, 'Handshake Type': htype,
+                                    'Time Stamp': timestamp,
+                                    'Source IP': p[IP].src, 'Source Port': p[TCP].sport, 'Destination IP': p[IP].dst,
+                                    'Destination Port': p[TCP].dport, 'Server Name': sname}
+                            t = d.SSL.find({'Time Stamp': timestamp}).count()
+                            if t > 0:
+                                pass
+                            else:
+                                c.insert(data)
+                        else:
+                            pass
+
                     if x[5] == '02':
                         htype = 'Server Hello'
-                        # print x[76:78]
                         ctype = ''.join(x[76:78])
-                        # print ctype
-                        data = {'PCAP ID': pcap_id, 'SSL Type': stype, 'Handshake Type': htype,
-                                'Time Stamp': timestamp,
-                                'Source IP': p[IP].src, 'Source Port': p[TCP].sport, 'Destination IP': p[IP].dst,
-                                'Destination Port': p[TCP].dport, 'Cipher Suite': ctype}
-                        t = d.SSL.find({'Time Stamp': timestamp}).count()
-                        if t > 0:
-                            pass
+                        if usedb > 0:
+                            data = {'PCAP ID': pcap_id, 'SSL Type': stype, 'Handshake Type': htype,
+                                    'Time Stamp': timestamp,
+                                    'Source IP': p[IP].src, 'Source Port': p[TCP].sport, 'Destination IP': p[IP].dst,
+                                    'Destination Port': p[TCP].dport, 'Cipher Suite': ctype}
+                            t = d.SSL.find({'Time Stamp': timestamp}).count()
+                            if t > 0:
+                                pass
+                            else:
+                                c.insert(data)
                         else:
-                            c.insert(data)
+                            pass
                     else:
                         pass
             else:

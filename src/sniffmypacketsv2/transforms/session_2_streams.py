@@ -4,6 +4,7 @@ from common.dbconnect import mongo_connect
 from common.entities import pcapFile
 from canari.framework import configure
 from canari.maltego.message import UIMessage
+from canari.config import config
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -30,6 +31,12 @@ __all__ = [
 def dotransform(request, response):
 
     pcap = request.value
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb == 0:
+        return response + UIMessage('No database support configured, check your config file')
+    else:
+        pass
     x = mongo_connect()
 
     try:

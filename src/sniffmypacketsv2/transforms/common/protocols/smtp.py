@@ -5,7 +5,7 @@ from scapy.layers.inet import *
 from scapy.packet import *
 from scapy.fields import *
 
-from sniffmypacketsv2.transforms.common.protocols import dissector
+import dissector
 
 
 def name_generator(size=9, chars=string.ascii_uppercase + string.digits):

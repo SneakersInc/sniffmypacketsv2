@@ -39,6 +39,12 @@ def dotransform(request, response):
 
     # pcap file pulled from Maltego
     pcap = request.value
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb == 0:
+        return response + UIMessage('You have chosen not to use a database')
+    else:
+        pass
 
     # Connect to the database so we can insert the record created below
     x = mongo_connect()

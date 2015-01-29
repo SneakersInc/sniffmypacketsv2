@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 
-import glob
-
-from canari.maltego.message import UIMessage
 from canari.framework import configure
-
-from common.dbconnect import mongo_connect
+from common.dbconnect import mongo_connect, find_session
 from common.hashmethods import *
 from common.auxtools import check_file
 from common.protocols.dissector import *
 from common.entities import pcapFile, Artifact
+from canari.config import config
+import uuid
+from canari.maltego.message import Field, UIMessage
+import glob
 
 
 __author__ = 'catalyst256'
@@ -38,46 +38,38 @@ __all__ = [
 )
 def dotransform(request, response):
 
-    devnull = open(os.devnull, 'w')
     pcap = request.value
-    folder = ''
-    # Connect to the database so we can insert the record created below
-    d = mongo_connect()
-    c = d['ARTIFACTS']
-
-    # Hash the pcap file
-    try:
-        md5pcap = md5_for_file(pcap)
-    except Exception as e:
-        return response + UIMessage(str(e))
-
-    # Get the PCAP ID for the pcap file
-    try:
-        s = d.INDEX.find({"MD5 Hash": md5pcap}).count()
-        if s == 0:
-            t = d.STREAMS.find({"MD5 Hash": md5pcap}).count()
-            if t > 0:
-                r = d.STREAMS.find({"MD5 Hash": md5pcap}, {"PCAP ID": 1, "Folder": 1, "_id": 0})
-                for i in r:
-                    pcap_id = i['PCAP ID']
-                    folder = i['Folder']
-
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb > 0:
+        # Connect to the database so we can insert the record created below
+        d = mongo_connect()
+        c = d['ARTIFACTS']
+        # Hash the pcap file
+        try:
+            md5pcap = md5_for_file(pcap)
+        except Exception as e:
+            return response + UIMessage(str(e))
+        x = find_session(md5pcap)
+        pcap_id = x[0]
+        folder = x[2]
+    else:
+        w = config['working/directory'].strip('\'')
+        try:
+            if w != '':
+                w = w + '/' + str(uuid.uuid4())[:12].replace('-', '')
+                if not os.path.exists(w):
+                    os.makedirs(w)
+                folder = w
             else:
-                return response + UIMessage('No PCAP ID, you need to index the pcap file')
-        if s > 0:
-            r = d.INDEX.find({"MD5 Hash": md5pcap}, {"PCAP ID": 1, "Working Directory": 1,  "_id": 0})
-            for i in r:
-                pcap_id = i['PCAP ID']
-                folder = i['Working Directory']
-    except Exception as e:
-        return response + UIMessage(str(e))
+                return response + UIMessage('No working directory set, check your config file')
+        except Exception as e:
+            return response + UIMessage(e)
 
     folder = '%s/%s' % (folder, 'artifacts')
 
     if not os.path.exists(folder):
         os.makedirs(folder)
-
-    # list_files = []
 
     dissector = Dissector() # instance of dissector class
     dissector.change_dfolder(folder)
@@ -94,13 +86,17 @@ def dotransform(request, response):
             n = len(folder) + 1
             l = len(g)
             filename = g[n:l]
-            data = {'PCAP ID': pcap_id, 'Path': folder, 'File Name': filename, 'File Type': ftype, 'MD5 Hash': md5hash,
-                    'SHA1 Hash': sha1hash}
-            t = d.ARTIFACTS.find({'MD5 Hash': md5hash, "File Name": filename}).count()
-            if t > 0:
-                pass
+            if usedb > 0:
+                data = {'PCAP ID': pcap_id, 'Path': folder, 'File Name': filename, 'File Type': ftype, 'MD5 Hash': md5hash,
+                        'SHA1 Hash': sha1hash}
+                t = d.ARTIFACTS.find({'MD5 Hash': md5hash, "File Name": filename}).count()
+                if t > 0:
+                    pass
+                else:
+                    c.insert(data)
             else:
-                c.insert(data)
+                pass
+
             # Create the Maltego entities
             a = Artifact(filename)
             a.ftype = ftype

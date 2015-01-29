@@ -32,7 +32,12 @@ __all__ = [
     debug=True
 )
 def dotransform(request, response):
-
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb == 0:
+        return response + UIMessage('No database support configured, check your config file')
+    else:
+        pass
     zipfile = request.value
     # Build the web server variables
     url = config['web/server'].strip('\'')

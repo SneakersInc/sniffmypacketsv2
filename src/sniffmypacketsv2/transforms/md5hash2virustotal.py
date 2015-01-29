@@ -5,6 +5,7 @@ from common.dbconnect import mongo_connect
 from common.entities import Artifact, VirusTotal
 from canari.maltego.message import UIMessage
 from canari.framework import configure
+from canari.config import config
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -32,30 +33,34 @@ def dotransform(request, response):
     filename = request.value
     md5hash = request.fields['sniffmypacketsv2.fhash']
 
-    # Connect to the database so we can insert the record created below
-    x = mongo_connect()
-    c = x['MALWARE']
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb > 0:
 
-    v = vt_lookup_file(md5hash)
+        # Connect to the database so we can insert the record created below
+        x = mongo_connect()
+        c = x['MALWARE']
 
-    if v is not None:
-        link = v['permalink']
-        scan = v['scan_date']
-    else:
-        return response + UIMessage('No record found in VirusTotal')
+        v = vt_lookup_file(md5hash)
 
-    s = x.ARTIFACTS.find({'MD5 HASH': md5hash}, {"PCAP ID": 1, "_id": 0})
-    pcap_id = ''
-    for m in s:
-        pcap_id = m['PCAP ID']
+        if v is not None:
+            link = v['permalink']
+            scan = v['scan_date']
+        else:
+            return response + UIMessage('No record found in VirusTotal')
 
-    data = {'PCAP ID': pcap_id, 'File Name': filename, 'Permalink': link, 'Scan Date': scan, 'MD5 Hash': md5hash}
+        s = x.ARTIFACTS.find({'MD5 HASH': md5hash}, {"PCAP ID": 1, "_id": 0})
+        pcap_id = ''
+        for m in s:
+            pcap_id = m['PCAP ID']
 
-    t = x.MALWARE.find({'MD5 Hash': md5hash}).count()
-    if t > 0:
-        pass
-    else:
-        c.insert(data)
+        data = {'PCAP ID': pcap_id, 'File Name': filename, 'Permalink': link, 'Scan Date': scan, 'MD5 Hash': md5hash}
+
+        t = x.MALWARE.find({'MD5 Hash': md5hash}).count()
+        if t > 0:
+            pass
+        else:
+            c.insert(data)
 
     e = VirusTotal(link)
     response += e

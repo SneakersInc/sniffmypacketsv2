@@ -1,6 +1,6 @@
 from scapy.layers.inet import *
 
-from sniffmypacketsv2.transforms.common.protocols import dissector
+import dissector
 
 
 class POPField(StrField):

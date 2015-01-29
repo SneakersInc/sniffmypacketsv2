@@ -7,7 +7,7 @@
 import datetime
 from layers.http import *
 from layers.BadLayers import *
-from common.auxtools import error_logging
+from auxtools import error_logging
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *

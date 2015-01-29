@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 import os
+import uuid
 import email
 import mimetypes
 from common.dbconnect import mongo_connect
 from common.entities import Artifact, EmailAttachment
 from canari.maltego.message import UIMessage
 from canari.framework import configure
+from canari.config import config
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -33,22 +35,25 @@ __all__ = [
 def dotransform(request, response):
 
     f = request.value
-    d = mongo_connect()
-    c = d['ARTIFACTS']
-    folder = []
-    # Check the pcap file doesn't exist in the database already (based on MD5 hash)
-    try:
-        s = d.ARTIFACTS.find({"File Name": f}).count()
-        if s > 0:
-            r = d.ARTIFACTS.find({"File Name": f}, {"Path": 1, "_id": 0})
-            for i in r:
-                folder = i['Path']
-                # print folder
-        else:
-            return response + UIMessage('File not found!!')
-    except Exception as e:
-        return response + UIMessage(str(e))
-    # print folder
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb > 0:
+        d = mongo_connect()
+        folder = []
+        # Check the pcap file doesn't exist in the database already (based on MD5 hash)
+        try:
+            s = d.ARTIFACTS.find({"File Name": f}).count()
+            if s > 0:
+                r = d.ARTIFACTS.find({"File Name": f}, {"Path": 1, "_id": 0})
+                for i in r:
+                    folder = i['Path']
+            else:
+                return response + UIMessage('File not found!!')
+        except Exception as e:
+            return response + UIMessage(str(e))
+    else:
+        folder = request.fields['path']
+
     msgdata = []
     lookfor = 'DATA'
     file = '%s/%s' % (folder, f)
@@ -60,14 +65,18 @@ def dotransform(request, response):
             if i == 1:
                 msgdata.append(part.strip())
 
+    save_files = []
+
     for item in msgdata:
-        newfolder = '%s/emails' % folder
+        newfolder = '%s/email-messages' % folder
         if not os.path.exists(newfolder):
             os.makedirs(newfolder)
-            filename = folder + '/' + 'msgdata.msg'
+            filename = newfolder + '/' + 'msgdata.msg'
             fb = open(filename, 'w')
             fb.write('%s\n' % item)
             fb.close()
+            if filename not in save_files:
+                save_files.append(filename)
 
             fp = open(filename)
             msg = email.message_from_file(fp)
@@ -89,8 +98,11 @@ def dotransform(request, response):
                 fp = open(savefile, 'wb')
                 fp.write(part.get_payload(decode=True))
                 fp.close()
+                if savefile not in save_files:
+                    save_files.append(savefile)
 
-                # Create the Maltego entity
-                e = EmailAttachment(savefile)
-                response += e
-            return response
+    # Create the Maltego entity
+    for s in save_files:
+        e = EmailAttachment(s)
+        response += e
+    return response

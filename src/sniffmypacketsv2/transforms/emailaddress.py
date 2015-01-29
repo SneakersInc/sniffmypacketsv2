@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from common.dbconnect import mongo_connect
+from common.dbconnect import mongo_connect, find_session
 from common.hashmethods import *
 from common.entities import pcapFile
 import logging
@@ -10,6 +10,7 @@ from canari.maltego.entities import EmailAddress
 from canari.maltego.message import UIMessage
 from canari.framework import configure
 import re
+from canari.config import config
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -34,38 +35,24 @@ __all__ = [
 )
 def dotransform(request, response):
     pcap = request.value
+
     lookfor = ['MAIL FROM:', 'RCPT TO:']
     pkts = rdpcap(pcap)
-
-    d = mongo_connect()
-    c = d['CREDS']
-
-    # Hash the pcap file
-    try:
-        md5pcap = md5_for_file(pcap)
-    except Exception as e:
-        return response + UIMessage(str(e))
-
-    # Get the PCAP ID for the pcap file
-    try:
-        s = d.INDEX.find({"MD5 Hash": md5pcap}).count()
-        if s == 0:
-            t = d.STREAMS.find({"MD5 Hash": md5pcap}).count()
-            if t > 0:
-                r = d.STREAMS.find({"MD5 Hash": md5pcap}, {"PCAP ID": 1, "_id": 0})
-                for i in r:
-                    pcap_id = i['PCAP ID']
-            else:
-                return response + UIMessage('No PCAP ID, you need to index the pcap file')
-        if s > 0:
-            r = d.INDEX.find({"MD5 Hash": md5pcap}, {"PCAP ID": 1, "_id": 0})
-            for i in r:
-                pcap_id = i['PCAP ID']
-    except Exception as e:
-        return response + UIMessage(str(e))
-
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb > 0:
+        d = mongo_connect()
+        c = d['CREDS']
+        # Hash the pcap file
+        try:
+            md5pcap = md5_for_file(pcap)
+        except Exception as e:
+            return response + UIMessage(str(e))
+        x = find_session(md5pcap)
+        pcap_id = x[0]
+    else:
+        pass
     addr = []
-
     try:
         for p in pkts:
             for m in lookfor:
@@ -74,17 +61,19 @@ def dotransform(request, response):
                     if m in raw:
                         for s in re.finditer('<([\S.-]+@[\S-]+)>', raw):
                             addr.append(s.group(1))
-                            # print s.group(1)
     except Exception as e:
         return response + UIMessage(str(e))
 
     for x in addr:
-        data = {'PCAP ID': pcap_id, 'Type': 'Email Address', 'Record': x}
-        t = d.CREDS.find({'Record': x}).count()
-        if t > 0:
-            pass
+        if usedb > 0:
+            data = {'PCAP ID': pcap_id, 'Type': 'Email Address', 'Record': x}
+            t = d.CREDS.find({'Record': x}).count()
+            if t > 0:
+                pass
+            else:
+                c.insert(data)
         else:
-            c.insert(data)
+            pass
         e = EmailAddress(x)
         response += e
     return response

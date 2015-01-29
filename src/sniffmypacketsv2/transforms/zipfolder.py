@@ -5,6 +5,7 @@ import zipfile
 from common.entities import Folder, ZipFile
 from canari.maltego.message import UIMessage, Field
 from canari.framework import configure
+from canari.config import config
 
 __author__ = 'catalyst256'
 __copyright__ = 'Copyright 2014, sniffmypacketsv2 Project'
@@ -31,6 +32,12 @@ __all__ = [
 def dotransform(request, response):
 
     folder = request.value
+    usedb = config['working/usedb']
+    # Check to see if we are using the database or not
+    if usedb == 0:
+        return response + UIMessage('No database support configured, check your config file')
+    else:
+        pass
     pcap_id = request.fields['sessionid']
     save_file = '%s/%s.zip' % (folder, pcap_id)
 

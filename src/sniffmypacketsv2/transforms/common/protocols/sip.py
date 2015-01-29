@@ -2,8 +2,7 @@ import base64
 
 from scapy.layers.inet import *
 from scapy.layers.dns import *
-
-from sniffmypacketsv2.transforms.common.protocols import dissector
+import dissector
 
 
 class SIPStartField(StrField):

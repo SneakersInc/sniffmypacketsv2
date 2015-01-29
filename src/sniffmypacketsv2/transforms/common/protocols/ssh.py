@@ -3,7 +3,7 @@ import base64
 
 from scapy.layers.inet import *
 
-from sniffmypacketsv2.transforms.common.protocols import dissector
+import dissector
 
 
 preprocess_sessions = []
