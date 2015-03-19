@@ -9,10 +9,14 @@ import time
 
 def check_file(filename):
     try:
-        m = magic.open(magic.MAGIC_NONE)
-        m.load()
-        f = m.file(filename)
-        return f
+        try:
+            m = magic.open(magic.MAGIC_NONE)
+            m.load()
+            f = m.file(filename)
+            return f
+        except Exception:
+            m = magic.from_file(filename)
+            return m
     except Exception as e:
         return str(e)
 
